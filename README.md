@@ -1,6 +1,6 @@
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-
 # ZahlenZebra
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ZahlenZebra is a **Processing (Java mode)** sketch: a short math quiz where answers are confirmed with **color cards** in front of a webcam. The live image is analyzed with **OpenCV for Processing** (`gab.opencv`): a small region of the frame is averaged in RGB and matched to per-digit calibration values.
 
@@ -38,10 +38,32 @@ Libraries are installed under your **sketchbook** folder, in a subfolder named `
 
 If no device is available (or the OS blocks camera access), the sketch still **starts**: you get a dark placeholder feed and an on-screen message instead of the VM exiting with a GStreamer “Could not find any devices” error.
 
+## Web (p5.js + TypeScript)
+
+A browser port lives in **`web/`** ([Vite](https://vitejs.dev/) + [p5.js](https://p5js.org/) + TypeScript). It mirrors the same levels, probe region, colour-matching tolerance, and keyboard behaviour. Differences from the desktop sketch:
+
+- Uses **`getUserMedia`** via p5 `createCapture` (no OpenCV / GStreamer).
+- Calibration is saved in **`localStorage`** (not `GroundTruthImages/` files). Colour values are in **RGBA** as read from the canvas; they are **not** interchangeable with the Java/OpenCV calibration—recalibrate in the browser.
+- Use **HTTPS** or **localhost** so the browser allows the camera.
+
+```bash
+cd web
+npm install
+npm run dev
+```
+
+Then open the URL Vite prints (usually `http://localhost:5173`). Production build: `npm run build` (output in `web/dist/`).
+
+### Netlify
+
+The repo includes [`netlify.toml`](netlify.toml) at the root: **base directory** `web`, build **`npm ci && npm run build`**, **publish** `dist` (i.e. `web/dist`). **`package-lock.json`** under `web/` must be committed so `npm ci` succeeds.
+
+In the Netlify UI, clear any old **Publish directory** / **Base directory** values that conflict with the file (the TOML overrides typical UI settings once merged). Camera access on the deployed site requires **HTTPS** (Netlify provides that by default).
+
 ## Controls
 
 - **Enter** — submit the recognized digit as your answer for the current level (when it matches the expected answer).
-- **c** — toggle calibration mode: point the probe at each digit’s color and press **0**–**9** to save ground truth (writes into `GroundTruthImages/`).
+- **c** — toggle calibration mode: point the probe at each digit’s colour and press **0**–**9** to save ground truth (Processing: files under `GroundTruthImages/`; web: `localStorage`).
 - **l** — cycle to the next level (for testing).
 
 ## Repository layout
@@ -50,11 +72,15 @@ If no device is available (or the OS blocks camera access), the sketch still **s
 ZahlenZebra/                 ← repository root (not the Processing sketch root)
   README.md
   LICENSE
+  netlify.toml               ← Netlify: build web/ → deploy web/dist
+  web/                       ← p5.js + TypeScript (npm run dev)
+    public/GUI/              ← UI images for the web build
+    src/
   zahlenZebra/               ← open this folder in Processing
     zahlenZebra.pde          ← main sketch tab
     *.java                   ← helpers (OpenCV sampler, UI, game state, color model)
-    GUI/                     ← UI images
-    GroundTruthImages/       ← calibration snapshots (generated / updated in calibration)
+    GUI/                     ← UI images (Processing)
+    GroundTruthImages/       ← calibration snapshots (Processing; generated in calibration)
 ```
 
 ## License

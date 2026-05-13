@@ -1,0 +1,14 @@
+[build]
+  base = "web"
+  command = "npm ci && npm run build"
+  # Relative to `base` (see Netlify “publish directory” monorepo docs)
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# Vite emits hashed filenames under /assets/
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
